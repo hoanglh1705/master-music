@@ -1,0 +1,91 @@
+### Music Tracks
+### Create
+curl -X 'POST' \
+  'http://localhost:8191/v1/customer/music-tracks' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "album": "Em của ngày hôm qua",
+  "artist": "Sơn Tùng MTP",
+  "duration": 189,
+  "genre": "Ballad",
+  "mp3_file": [
+    0
+  ],
+  "release_year": 2017,
+  "title": "Em của ngày hôm qua"
+}'
+
+### Update
+curl -X 'PATCH' \
+  'http://localhost:8191/v1/customer/music-tracks/6620da703e1ac4c9d158ae37' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "album": "Em của ngày hôm qua 2"
+}'
+
+### DELETE
+curl -X 'DELETE' \
+  'http://localhost:8191/v1/customer/playlists/6620da703e1ac4c9d158ae37' \
+  -H 'accept: application/json'
+
+### SEARCH
+curl -X 'GET' \
+  'http://localhost:8191/v1/customer/playlists?l=25&p=1&f=%7B%22query%22%3A%22Em%22%7D' \
+  -H 'accept: application/json'
+
+### Play List
+### CREATE
+curl -X 'POST' \
+  'http://localhost:8191/v1/customer/playlists' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "My playlist",
+  "tracks": [
+    {
+      "album": "Em của ngày hôm qua",
+      "artist": "Sơn Tùng MTP",
+      "duration": 189,
+      "genre": "Ballad",
+      "id": "661ffc6c12e6a410902997b0",
+      "mp3_file": "AA==",
+      "release_year": 2017,
+      "title": "Em của ngày hôm qua"
+    }
+  ]
+}'
+
+### SEARCH
+curl -X 'GET' \
+  'http://localhost:8191/v1/customer/playlists?l=25&p=1&f=%7B%22query%22%3A%22Em%22%7D' \
+  -H 'accept: application/json'
+
+### VIEW
+curl -X 'GET' \
+  'http://localhost:8191/v1/customer/playlists/6620db0b3e1ac4c9d158ae38' \
+  -H 'accept: application/json'
+
+### UPDATE
+curl -X 'PATCH' \
+  'http://localhost:8191/v1/customer/playlists/6620db0b3e1ac4c9d158ae38' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "My play list update"
+}'
+
+### DELETE Music Track in Playlist
+curl -X 'DELETE' \
+  'http://localhost:8191/v1/customer/playlists/music-tracks/6620db0b3e1ac4c9d158ae38' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "music_track_id": "661ffc6c12e6a410902997b0"
+}'
+
+### DELETE Playlist
+curl -X 'DELETE' \
+  'http://localhost:8191/v1/customer/playlists/6620db0b3e1ac4c9d158ae38' \
+  -H 'accept: application/json'

@@ -1,0 +1,55 @@
+# docker-compose.yml
+
+version: '3'
+services:
+  api:
+    image: master-music
+    ports:
+      - 8191:8191
+    networks:
+      - loadbalancing
+    depends_on:
+      - mongo-master-music
+    links:
+      - mongo-master-music
+    deploy:
+      replicas: 3
+  
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    ports:
+      - "8291:8291"
+    networks:
+      - loadbalancing
+    depends_on:
+      - api
+
+  mongo-master-music:
+    image: mongo:4.2.3-bionic
+    container_name: 'mongo-master-music'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/dev/mongo:/data/db
+
+  mongo-express:
+    image: mongo-express:latest
+    hostname: mongo-express
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: rootpassword
+      ME_CONFIG_MONGODB_SERVER: mongo-master-music
+      ME_CONFIG_MONGODB_PORT: 27017
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo-master-music
+    links:
+      - mongo-master-music
+
+networks:
+  loadbalancing:
