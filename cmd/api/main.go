@@ -16,6 +16,7 @@ import (
 	musictrackcustomer "music-master/internal/api/v1/customer/musictrack"
 	playlistcustomer "music-master/internal/api/v1/customer/playlist"
 	"music-master/internal/db"
+	"music-master/internal/db/elasticsearch"
 	"music-master/internal/util/converter"
 	"music-master/internal/util/server"
 	_ "music-master/internal/util/swagger"
@@ -34,8 +35,15 @@ func main() {
 	}
 	defer mongoDB.Disconnect()
 
+	es, err := elasticsearch.NewESClient(cfg)
+	if err != nil {
+		panic(err)
+	}
+
 	musicTrackCollection := db.NewMusicTrackCollection(mongoDB)
 	playlistCollection := db.NewPlaylistCollection(mongoDB)
+
+	musicTrackES := elasticsearch.NewMusicTrackCollection(es)
 
 	fmt.Println("cfg", cfg)
 	// Init HTTP server
@@ -47,7 +55,7 @@ func main() {
 	})
 
 	converter := converter.NewModelConverter()
-	musicTrackCustomer := musictrackcustomer.New(musicTrackCollection, converter)
+	musicTrackCustomer := musictrackcustomer.New(musicTrackCollection, converter, musicTrackES)
 	playlistCustomer := playlistcustomer.New(playlistCollection, converter)
 
 	v1cRouter := e.Group("/v1")

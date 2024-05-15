@@ -8,10 +8,13 @@ import (
 )
 
 // New creates new musictrack application service
-func New(musicTrackCollection MusicTrackCollection, converter ModelConverter) *MusicTrack {
+func New(musicTrackCollection MusicTrackCollection,
+	converter ModelConverter,
+	musicTrackES MusicTrackES) *MusicTrack {
 	return &MusicTrack{
 		musicTrackCollection: musicTrackCollection,
 		converter:            converter,
+		musicTrackES:         musicTrackES,
 	}
 }
 
@@ -19,6 +22,7 @@ func New(musicTrackCollection MusicTrackCollection, converter ModelConverter) *M
 type MusicTrack struct {
 	musicTrackCollection MusicTrackCollection
 	converter            ModelConverter
+	musicTrackES         MusicTrackES
 }
 
 type MusicTrackCollection interface {
@@ -28,6 +32,10 @@ type MusicTrackCollection interface {
 	FindOneAndUpdate(ctx context.Context, where bson.M, data *model.MusicTrack) (*model.MusicTrack, error)
 	RemoveOne(ctx context.Context, where bson.M) error
 	Search(ctx context.Context, searchQuery string, page, pageSize int) ([]*model.MusicTrack, error)
+}
+
+type MusicTrackES interface {
+	Search(ctx context.Context)
 }
 
 type ModelConverter interface {

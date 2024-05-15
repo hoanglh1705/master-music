@@ -46,6 +46,8 @@ func (s *MusicTrack) Search(ctx context.Context, authUsr *model.AuthUser, lq *ht
 		return nil, err
 	}
 
+	s.musicTrackES.Search(ctx)
+
 	queryStr := query["query"].(string)
 	rec, err := s.musicTrackCollection.Search(ctx, queryStr, lq.Page, lq.Limit)
 	if err != nil {

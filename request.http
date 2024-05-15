@@ -18,7 +18,7 @@ curl -X 'POST' \
 
 ### Update
 curl -X 'PATCH' \
-  'http://localhost:8191/v1/customer/music-tracks/6620da703e1ac4c9d158ae37' \
+  'http://localhost:8191/v1/customer/music-tracks/663c8d255246ff51aff4fe14' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{

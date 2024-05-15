@@ -1,0 +1,149 @@
+version: '3'
+
+services:
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:$ES_VERSION
+    container_name: es01
+    environment:
+      - node.name=es01
+      - discovery.type=single-node
+      # - cluster.name=es-docker-cluster
+      # - discovery.seed_hosts=es02,es03
+      # - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.license.self_generated.type=basic
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=$CERTS_DIR/es01/es01.key
+      - xpack.security.http.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
+      - xpack.security.http.ssl.certificate=$CERTS_DIR/es01/es01.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
+      - xpack.security.transport.ssl.certificate=$CERTS_DIR/es01/es01.crt
+      - xpack.security.transport.ssl.key=$CERTS_DIR/es01/es01.key
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+      - certs:$CERTS_DIR
+    ports:
+      - 9200:9200
+    healthcheck:
+      test: "curl --fail http://localhost:9200 || exit 1"
+      interval: 2s
+      timeout: 60s
+      retries: 300
+
+  # es02:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:$ES_VERSION
+  #   container_name: es02
+  #   environment:
+  #     - node.name=es02
+  #     - cluster.name=es-docker-cluster
+  #     - discovery.seed_hosts=es01,es03
+  #     - cluster.initial_master_nodes=es01,es02,es03
+  #     - bootstrap.memory_lock=true
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #     - xpack.license.self_generated.type=basic
+  #     - xpack.security.enabled=true
+  #     - xpack.security.http.ssl.enabled=true
+  #     - xpack.security.http.ssl.key=$CERTS_DIR/es02/es02.key
+  #     - xpack.security.http.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
+  #     - xpack.security.http.ssl.certificate=$CERTS_DIR/es02/es02.crt
+  #     - xpack.security.transport.ssl.enabled=true
+  #     - xpack.security.transport.ssl.verification_mode=certificate
+  #     - xpack.security.transport.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
+  #     - xpack.security.transport.ssl.certificate=$CERTS_DIR/es02/es02.crt
+  #     - xpack.security.transport.ssl.key=$CERTS_DIR/es02/es02.key
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - data02:/usr/share/elasticsearch/data
+  #     - certs:$CERTS_DIR
+
+  # es03:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:$ES_VERSION
+  #   container_name: es03
+  #   environment:
+  #     - node.name=es03
+  #     - cluster.name=es-docker-cluster
+  #     - discovery.seed_hosts=es01,es02
+  #     - cluster.initial_master_nodes=es01,es02,es03
+  #     - bootstrap.memory_lock=true
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #     - xpack.license.self_generated.type=basic
+  #     - xpack.security.enabled=true
+  #     - xpack.security.http.ssl.enabled=true
+  #     - xpack.security.http.ssl.key=$CERTS_DIR/es03/es03.key
+  #     - xpack.security.http.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
+  #     - xpack.security.http.ssl.certificate=$CERTS_DIR/es03/es03.crt
+  #     - xpack.security.transport.ssl.enabled=true
+  #     - xpack.security.transport.ssl.verification_mode=certificate
+  #     - xpack.security.transport.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
+  #     - xpack.security.transport.ssl.certificate=$CERTS_DIR/es03/es03.crt
+  #     - xpack.security.transport.ssl.key=$CERTS_DIR/es03/es03.key
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - data03:/usr/share/elasticsearch/data
+  #     - certs:$CERTS_DIR
+      
+  monstache:
+    image: rwynn/monstache:6.7.2
+    platform: linux/amd64
+    container_name: oc_monstache
+    working_dir: /app/monstache
+    command: -f ./config.toml
+    environment:
+      - MONSTACHE_LOG_DIR=logs
+      - MONSTACHE_MONGO_URL=${DB_URI}
+      - MONSTACHE_ES_URLS=${ELASTIC_URL}
+      - MONSTACHE_ES_USER=${ELASTIC_USERNAME}
+      - MONSTACHE_ES_PASS=${ELASTIC_PASSWORD}
+    volumes:
+      - ../monstache:/app/monstache
+    ports:
+      - "8080:8080"
+    # restart: unless-stopped
+    healthcheck:
+      test: "wget -q -O - http://localhost:8080/healthz"
+      interval: 10s
+      timeout: 30s
+      retries: 300
+    # networks:
+    #   - db
+
+  mongodb:
+    image: mongo:4.2.3-bionic
+    container_name: 'mongodb'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+    ports:
+      - "27017:27017"
+    # networks:
+    #   - db
+    volumes:
+      - ./data/dev/mongo:/data/db
+
+volumes:
+  data01:
+    driver: local
+  # data02:
+  #   driver: local
+  # data03:
+  #   driver: local
+  certs:
+    driver: local
+  
+# networks:
+#   # loadbalancing:
+#   db:
