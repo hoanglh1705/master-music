@@ -9,7 +9,7 @@ RUN go mod download
 COPY . .
 RUN go build -o bin/svc ./cmd/api
 
-FROM alpine:latest
+FROM alpine:3.23.3
 COPY ./.env ./.env
 RUN mkdir swaggerui
 COPY ./swaggerui ./swaggerui
